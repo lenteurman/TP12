@@ -1,8 +1,12 @@
 package fr.formation.tp12;
 
+import android.content.Intent;
 import android.database.sqlite.SQLiteException;
 import android.os.Bundle;
+import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AppCompatActivity;
+import android.view.View;
+import android.widget.ListView;
 import android.widget.Toast;
 
 import java.util.List;
@@ -13,11 +17,26 @@ import fr.formation.tp12.database.modele.User;
 public class Principale extends AppCompatActivity {
 
     DataSource<User> dataSource;
+    FloatingActionButton bouton1;
+    ListView liste;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_principale);
+
+        bouton1 = (FloatingActionButton) findViewById(R.id.fab);
+        liste = (ListView) findViewById(R.id.list);
+
+        bouton1.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent intent = new Intent(Principale.this,Activity2.class);
+                startActivity(intent);
+            }
+        });
+
+        //refresh();
 
         // Create or retrieve the database
         try {
@@ -35,6 +54,7 @@ public class Principale extends AppCompatActivity {
         user.setNom("Tintin");
         try {
             insertRecord(user);
+            //refresh();
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -44,6 +64,7 @@ public class Principale extends AppCompatActivity {
         try {
             user.setNom("Bidochon");
             updateRecord(user);
+            //refresh();
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -55,12 +76,14 @@ public class Principale extends AppCompatActivity {
         // And then delete it:
         // -------------------
         //deleteRecord(user);
+        //refresh();
     }
 
     @Override
     protected void onResume() {
         super.onResume();
         openDB();
+        //refresh();
     }
 
     @Override
@@ -77,7 +100,7 @@ public class Principale extends AppCompatActivity {
         dataSource.close();
     }
 
-    private long insertRecord(User user) throws Exception {
+    protected long insertRecord(User user) throws Exception {
 
         // Insert the line in the database
         long rowId = dataSource.insert(user);
@@ -146,6 +169,9 @@ public class Principale extends AppCompatActivity {
         Toast.makeText(this,
                 "The number of elements retrieved is " + count,
                 Toast.LENGTH_LONG).show();
+
+    }
+    public void refresh() {
 
     }
 }
