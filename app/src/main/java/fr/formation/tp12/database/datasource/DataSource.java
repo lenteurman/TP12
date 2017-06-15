@@ -14,9 +14,9 @@ public class DataSource<T extends Modele> {
     private SQLiteDatabase db;
     private T modele;
 
-    public DataSource(Context context, Class<T> clazz) throws Exception {
+    public DataSource(Context context, Class<T> clazz, int versionDB) throws Exception {
         this.modele = clazz.newInstance();
-        helper = new DBOpenHelper(context, modele);
+        helper = new DBOpenHelper(context, modele, versionDB);
     }
 
     /*public SQLiteDatabase getDB() {

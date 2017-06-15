@@ -11,6 +11,8 @@ import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.Toast;
 
+import com.google.gson.Gson;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
@@ -20,11 +22,17 @@ import java.util.ListIterator;
 import fr.formation.tp12.database.datasource.DataSource;
 import fr.formation.tp12.database.modele.User;
 
+import static android.R.layout.simple_list_item_1;
+
 public class Principale extends AppCompatActivity {
 
     DataSource<User> dataSource;
     FloatingActionButton bouton1;
     ListView liste;
+    List<String> noms = new ArrayList<String>();
+    ArrayAdapter<String> adapter;
+    // il faut commencer a la version 1 sinon on appelle une db null
+    private int versionDB = 1; // Permet de detruire la base de données SQLite si on incrémente la version
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -34,25 +42,29 @@ public class Principale extends AppCompatActivity {
         bouton1 = (FloatingActionButton) findViewById(R.id.fab);
         liste = (ListView) findViewById(R.id.list);
 
+        adapter = new ArrayAdapter<String>(Principale.this,
+                simple_list_item_1, noms);
+        liste.setAdapter(adapter);
+
         bouton1.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 Intent intent = new Intent(Principale.this,Activity2.class);
-                startActivity(intent);
+                startActivityForResult(intent, 2);
             }
         });
 
         //refresh();
 
         // Create or retrieve the database
-        try {
+        /*try {
             dataSource = new DataSource<>(this, User.class);
         } catch (Exception e) {
             e.printStackTrace();
-        }
+        }*/
 
         // open the database
-        openDB();
+        //openDB();
 
         // Insert a new record
         // -------------------
@@ -77,7 +89,7 @@ public class Principale extends AppCompatActivity {
 
         // Query that line
         // ---------------
-        queryTheDatabase();
+        //queryTheDatabase();
 
         // And then delete it:
         // -------------------
@@ -88,23 +100,40 @@ public class Principale extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        openDB();
+        //openDB();
         refresh();
     }
 
     @Override
     protected void onPause() {
         super.onPause();
-        closeDB();
+        //closeDB();
     }
 
-    public void openDB() throws SQLiteException {
-        dataSource.open();
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        try {
+            if (dataSource == null) {
+                dataSource = new DataSource<>(this, User.class, versionDB);
+                dataSource.open();
+            }
+        } catch (Exception e) {
+            // Traiter le cas !
+            e.printStackTrace();
+        }
+    }
+    protected void onDestroy() {
+        super.onDestroy();
+        try {
+            dataSource.close();
+        } catch (Exception e) {
+            // Traiter le cas !
+            e.printStackTrace();
+        }
     }
 
-    public void closeDB() {
-        dataSource.close();
-    }
 
     protected long insertRecord(User user) throws Exception {
 
@@ -142,7 +171,7 @@ public class Principale extends AppCompatActivity {
         return rowId;
     }
 
-    private void deleteRecord(User user) {
+    /*private void deleteRecord(User user) {
         long rowId = dataSource.delete(user);
         if (rowId == -1) {
             Toast.makeText(this, "Error when deleting an User",
@@ -151,17 +180,17 @@ public class Principale extends AppCompatActivity {
             Toast.makeText(this, "User deleted in database", Toast.LENGTH_LONG)
                     .show();
         }
-    }
+    }*/
 
     /**
      * Query a the database
      */
-    private void queryTheDatabase() {
+    /*private void queryTheDatabase() {
         List<User> users = dataSource.readAll();
         displayResults(users);
-    }
+    }*/
 
-    private void displayResults(List<User> users) {
+    /*private void displayResults(List<User> users) {
 
         int count = 0;
         for (User user : users) {
@@ -175,19 +204,38 @@ public class Principale extends AppCompatActivity {
                 "The number of elements retrieved is " + count,
                 Toast.LENGTH_LONG).show();
 
+    }*/
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+
+        if (resultCode == 2) {
+
+            String flux = data.getStringExtra("utilisateur"); // Tester si pas null ;-)
+            User utilisateur = new Gson().fromJson(flux, User.class);
+
+            try {
+                dataSource.insert(utilisateur);
+            } catch (Exception e) {
+                // Que faire :-(
+                e.printStackTrace();
+            }
+
+            // Indiquer un changement au RecycleView
+            refresh();
+        }
+
     }
     public void refresh() {
         List<User> users = dataSource.readAll();
-        List<String> noms = new ArrayList<String>();
+        noms.clear();
         int count = 0;
         for(User user : users) {
             noms.add(count, user.getNom());
             count++;
         }
 
-        final ArrayAdapter<String> adapter = new ArrayAdapter<String>(Principale.this,
-                android.R.layout.simple_list_item_1, noms);
-        liste.setAdapter(adapter);
+        adapter.notifyDataSetChanged();
     }
 }
 
