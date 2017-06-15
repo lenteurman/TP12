@@ -3,13 +3,19 @@ package fr.formation.tp12;
 import android.content.Intent;
 import android.database.sqlite.SQLiteException;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
+import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.Toast;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Iterator;
 import java.util.List;
+import java.util.ListIterator;
 
 import fr.formation.tp12.database.datasource.DataSource;
 import fr.formation.tp12.database.modele.User;
@@ -50,24 +56,24 @@ public class Principale extends AppCompatActivity {
 
         // Insert a new record
         // -------------------
-        User user = new User();
+        /*User user = new User();
         user.setNom("Tintin");
         try {
             insertRecord(user);
-            //refresh();
+            refresh();
         } catch (Exception e) {
             e.printStackTrace();
-        }
+        }*/
 
         // update that line
         // ----------------
-        try {
+        /*try {
             user.setNom("Bidochon");
             updateRecord(user);
-            //refresh();
+            refresh();
         } catch (Exception e) {
             e.printStackTrace();
-        }
+        }*/
 
         // Query that line
         // ---------------
@@ -83,7 +89,7 @@ public class Principale extends AppCompatActivity {
     protected void onResume() {
         super.onResume();
         openDB();
-        //refresh();
+        refresh();
     }
 
     @Override
@@ -93,7 +99,7 @@ public class Principale extends AppCompatActivity {
     }
 
     public void openDB() throws SQLiteException {
-        dataSource.getDB();
+        dataSource.open();
     }
 
     public void closeDB() {
@@ -121,7 +127,7 @@ public class Principale extends AppCompatActivity {
      *
      * @return the updated row id
      */
-    private long updateRecord(User user) throws Exception {
+    protected long updateRecord(User user) throws Exception {
 
         int rowId = dataSource.update(user);
 
@@ -158,8 +164,7 @@ public class Principale extends AppCompatActivity {
     private void displayResults(List<User> users) {
 
         int count = 0;
-        for (User user : users
-                ) {
+        for (User user : users) {
             Toast.makeText(
                     this,
                     "Utilisateur :" + user.getNom() + "("
@@ -172,6 +177,17 @@ public class Principale extends AppCompatActivity {
 
     }
     public void refresh() {
+        List<User> users = dataSource.readAll();
+        List<String> noms = new ArrayList<String>();
+        int count = 0;
+        for(User user : users) {
+            noms.add(count, user.getNom());
+            count++;
+        }
 
+        final ArrayAdapter<String> adapter = new ArrayAdapter<String>(Principale.this,
+                android.R.layout.simple_list_item_1, noms);
+        liste.setAdapter(adapter);
     }
 }
+

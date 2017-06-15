@@ -1,4 +1,7 @@
 <resources>
     <string name="app_name">TP12</string>
     <string name="title_activity_main2">MainActivity2</string>
+    <string name="formulaire">Formulaire</string>
+    <string name="nom">Nom</string>
+    <string name="enregistrer">Enregistrer</string>
 </resources>

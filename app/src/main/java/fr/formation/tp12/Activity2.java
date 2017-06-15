@@ -22,7 +22,7 @@ public class Activity2 extends Principale {
     List<User> userList;
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_2);
 
@@ -35,7 +35,7 @@ public class Activity2 extends Principale {
                 EditText edittext = (EditText) findViewById(R.id.editText);
                 texte = edittext.getText().toString();
 
-                User user = new User;
+                User user = new User();
                 user.setNom(texte);
 
                 userList = dataSource.readAll();
@@ -50,7 +50,14 @@ public class Activity2 extends Principale {
                     }
                 }
                 else {//on update
-
+                    try {
+                        updateRecord(user);
+                        edittext.setText("");
+                        Intent intent = new Intent(Activity2.this,Principale.class);
+                        startActivity(intent);
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
                 }
             }
         });
